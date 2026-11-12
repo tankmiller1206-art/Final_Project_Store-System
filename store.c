@@ -22,15 +22,18 @@ void add_batch(Product *product, int batch_id,
 
                 }
 
-Product *create_product(char *id, char *name, int price)
+Product *create_product(char *id, char *name)
 {
     Product *new_product = malloc(sizeof(Product));
+
     if(new_product == NULL){
-        return;
+        return NULL;
     }
     strcpy(new_product -> id,id);
     strcpy(new_product -> name, name);
-    new_product -> price = price;
+    new_product -> batch_head = NULL;
+    new_product -> batch_tail = NULL;
+    new_product -> price = -1;
     new_product -> next = NULL;
     return new_product;
 
@@ -38,17 +41,24 @@ Product *create_product(char *id, char *name, int price)
 
 void append_product(Product **head, Product *new_product)
 {
-    if(*head == NULL){
-        *head = new_product;
+    if(head == NULL || new_product == NULL){
         return;
     }
 
     Product *current = *head;
-    while(current -> next != NULL){
+    Product *previous = NULL;
+    while(current -> next != NULL &&
+          strcmp(current->id,new_product->id)<0){
+            previous = current;
         current = current -> next;
     }
-    current -> next = new_product;
+    new_product->next = current;
 
+    if(previous == NULL){
+        *head = new_product;
+    }else{
+        previous->next = new_product;
+    }
 }
 
 Product *find_product(Product *head, char *id)
@@ -63,33 +73,44 @@ Product *find_product(Product *head, char *id)
     return NULL;
 }
 
-void *delete_product(Product **head, char *id)
-{
-    Product *current = *head;
-    Product *previous = NULL;
+int deduct_stock(Product *product, int quantity, int *total_cost){
+    if(product == NULL || quantity <=0 || total_cost == NULL){
+        return 0;
+    }
+    *total_cost=0;
+    //計算庫存
+    int total=0;
+    Batch *current = product->batch_head;
 
-    while (current != NULL){
-        if(strcmp(current->id, id)==0){
-            break;
+    while(current != NULL){
+        total += current->quantity;
+        current = current->next;
+    }
+    //庫存不足 不扣除任何庫存
+    if(total<quantity){
+        return 0;
+    }
+
+    //按照FIFO扣除庫存
+    current = product -> batch_head;
+    while(quantity>0){ 
+        if(current->quantity<=quantity){//扣除全部
+            *total_cost += current->quantity * current->unit_cost;
+            quantity -= current->quantity;
+            Batch *temp = current;
+            current = current->next;
+            free(temp);
+            product->batch_head = current;
+
+        }else{
+            //扣除部分
+            *total_cost += quantity * current->unit_cost;
+            current->quantity -=quantity;
+            quantity = 0;
         }
-        previous = current;
-        current = current -> next;
     }
-
-    if(current == NULL){
-        return;
+    if(product->batch_head == NULL){
+        product->batch_tail = NULL;
     }
-    if(previous == NULL){ //確認刪除的是不是第一個商品
-        *head = current -> next;
-    }else{
-        previous -> next = current ->next;
-    }
-    // free 要刪除的商品記憶體
-    Batch *batch = current->batch_head;
-    while(batch != NULL){
-        Batch *temp = batch;
-        batch = batch ->next;
-        free(temp);
-    }
-    free(current);
+    return 1;
 }

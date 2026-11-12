@@ -26,12 +26,15 @@ typedef struct Product {
 
 void add_batch(Product *product, int batch_id,
     int quantity, int unit_cost);
-Product *create_product(char *id, char *name, int price);
+Product *create_product(char *id, char *name);
 
 void append_product(Product **head, Product *new_product);
 
 Product *find_product(Product *head, char *id);
-void *delete_product(Product **head, char *id);
+
+
+int deduct_stock(Product *product, int quantity, int *total_cost);
+
 
 
 

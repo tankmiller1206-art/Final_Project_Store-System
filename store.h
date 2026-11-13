@@ -24,11 +24,22 @@ typedef struct Product {
     struct Product *next;
 } Product;
 
+typedef struct Store {
+    Product *product_head;
+
+    int revenue;
+    int cogs;
+    int gift_cost;
+    int next_batch_id;
+} Store;
+
 void add_batch(Product *product, int batch_id,
     int quantity, int unit_cost);
 Product *create_product(char *id, char *name);
 
 void append_product(Product **head, Product *new_product);
+
+void init_store(Store *store);
 
 Product *find_product(Product *head, char *id);
 

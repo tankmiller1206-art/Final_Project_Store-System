@@ -114,3 +114,14 @@ int deduct_stock(Product *product, int quantity, int *total_cost){
     }
     return 1;
 }
+
+void init_store(Store *store){
+    if(store == NULL){
+        return;
+    }
+    store ->product_head = NULL;
+    store ->revenue = 0;
+    store ->cogs =0;
+    store ->gift_cost =0;
+    store ->next_batch_id =1;
+}

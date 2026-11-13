@@ -21,7 +21,36 @@ void add_batch(Product *product, int batch_id,
     }
 
                 }
+void add_cart_item(Cart *cart, char *product_id, int quantity){
+    if(cart == NULL || product_id == NULL || quantity <= 0){
+        return;
+    }
+    CartItem *current = cart->item_head;
+    while(current != NULL){
+        if(strcmp(current->product_id, product_id) == 0){
+            current->quantity += quantity;
+            return;
+        }
+        current = current->next;
+    }
+    CartItem *new_cartitem = malloc(sizeof(CartItem));
 
+    if(new_cartitem == NULL){
+        return;
+    }
+    strcpy(new_cartitem->product_id, product_id);
+    new_cartitem->quantity = quantity;
+    new_cartitem->next = NULL;
+    if(cart->item_head == NULL){
+        cart->item_head = new_cartitem;
+        return;
+    }
+    current = cart->item_head;
+    while(current->next != NULL){
+        current = current->next;
+    }
+    current->next = new_cartitem;
+}
 Product *create_product(char *id, char *name)
 {
     Product *new_product = malloc(sizeof(Product));
@@ -140,8 +169,30 @@ Cart *create_cart(Store *store, char *cart_id){
     new_cart->item_head = NULL;
     new_cart->next = NULL;
 
+    if(store->cart_head == NULL){   //將新的購物車加進linked list
+        store->cart_head = new_cart;
+    }else{
+        Cart *temp = store->cart_head;
+        while(temp->next != NULL){  
+            temp = temp->next;
+        }
+       temp->next = new_cart;
+    }
+    return new_cart;
 }
-
+Cart *find_cart(Store *store, char *cart_id){
+    if(store == NULL || cart_id == NULL){
+        return NULL;
+    }
+    Cart *temp = store->cart_head;
+    while(temp != NULL){
+        if(strcmp(temp->cart_id, cart_id) == 0){
+            return temp;
+        }
+        temp = temp->next;
+    }
+    return NULL;
+}
 void free_products(Product *product){
     while(product != NULL){
         while(product->batch_head != NULL){
@@ -155,15 +206,30 @@ void free_products(Product *product){
     }
     return; 
 }
-
+void free_carts(Cart *cart){
+    if(cart == NULL){
+        return;
+    }
+    while(cart != NULL){
+        while(cart->item_head != NULL){
+            CartItem *temp = cart->item_head;
+            cart->item_head = temp->next;
+            free(temp);
+        }
+        Cart *p_temp = cart;
+        cart = cart->next;
+        free(p_temp);
+    }
+    return;
+}
 void free_store(Store *store){
     if(store == NULL){
         return;
     }
-    if(store->product_head == NULL){
-        return;
-    }
+    free_carts(store->cart_head);
     free_products(store->product_head);
+
     store->product_head = NULL;
-    return;
+    store->cart_head = NULL;
+    
 }

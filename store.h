@@ -61,6 +61,7 @@ typedef struct CartItem {
 
 void add_batch(Product *product, int batch_id,
     int quantity, int unit_cost);
+void add_cart_item(Cart *cart, char *product_id, int quantity);
 Product *create_product(char *id, char *name);
 
 void append_product(Product **head, Product *new_product);
@@ -68,9 +69,10 @@ void append_product(Product **head, Product *new_product);
 void init_store(Store *store);
 void free_products(Product *product);
 void free_store(Store *store);
+void free_carts(Cart *cart);
 
 Cart *create_cart(Store *store, char *cart_id);
-
+Cart *find_cart(Store *store, char *cart_id);
 Product *find_product(Product *head, char *id);
 
 

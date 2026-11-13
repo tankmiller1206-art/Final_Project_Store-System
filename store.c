@@ -47,7 +47,7 @@ void append_product(Product **head, Product *new_product)
 
     Product *current = *head;
     Product *previous = NULL;
-    while(current -> next != NULL &&
+    while(current != NULL &&
           strcmp(current->id,new_product->id)<0){
             previous = current;
         current = current -> next;
@@ -124,4 +124,46 @@ void init_store(Store *store){
     store ->cogs =0;
     store ->gift_cost =0;
     store ->next_batch_id =1;
+    store ->promotion.active=0;
+    store ->cart_head = NULL;
+}
+
+Cart *create_cart(Store *store, char *cart_id){
+    if(store == NULL || cart_id == NULL){
+        return NULL;
+    }
+    Cart *new_cart = malloc(sizeof(Cart));
+    if(new_cart == NULL){
+        return NULL;
+    }
+    strcpy(new_cart->cart_id, cart_id);
+    new_cart->item_head = NULL;
+    new_cart->next = NULL;
+
+}
+
+void free_products(Product *product){
+    while(product != NULL){
+        while(product->batch_head != NULL){
+                Batch *temp =  product->batch_head;
+                product->batch_head = temp->next;
+                free(temp);
+            }
+        Product *p_temp = product;
+        product = product->next;
+        free(p_temp);   
+    }
+    return; 
+}
+
+void free_store(Store *store){
+    if(store == NULL){
+        return;
+    }
+    if(store->product_head == NULL){
+        return;
+    }
+    free_products(store->product_head);
+    store->product_head = NULL;
+    return;
 }
